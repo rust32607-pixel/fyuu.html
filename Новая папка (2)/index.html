@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Интерактивная лаборатория: законы и реакции</title>
+<meta name="description" content="Учебный веб-прототип: интерактивные анимации и точные расчёты по физике и химии с указанием источников и границ применимости.">
+<link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+<noscript><p style="padding:20px">Для работы лаборатории нужен включённый JavaScript.</p></noscript>
+
+<header class="topbar">
+  <div class="brand">
+    <div class="brand-mark" aria-hidden="true">Л</div>
+    <div>
+      <h1>Интерактивная лаборатория</h1>
+      <p>законы и реакции · учебный прототип</p>
+    </div>
+  </div>
+
+  <nav class="tabs" id="subjectTabs" aria-label="Предметы">
+    <button class="tab is-active" data-subject="phys">Физика</button>
+    <button class="tab" data-subject="chem">Химия</button>
+  </nav>
+
+  <div class="topbar-right">
+    <div class="unit-toggle" role="group" aria-label="Система единиц">
+      <span class="unit-caption">Единицы</span>
+      <button class="unit-btn is-active" data-unit="SI" title="Международная система единиц">СИ</button>
+      <button class="unit-btn" data-unit="school" title="Школьные единицы: см, г, мин, кПа, г/см³">школа</button>
+    </div>
+  </div>
+</header>
+
+<div class="layout">
+  <aside class="sidebar" id="sidebar" aria-label="Список тем"></aside>
+
+  <main class="content" id="content">
+
+    <!-- Стартовая страница-инструкция -->
+    <section class="view view-intro" id="introView">
+      <div class="card intro-card">
+        <h2 class="intro-title">Как устроена лаборатория</h2>
+        <p class="lead">
+          Каждая тема — это реальный закон или реакция из школьного курса: формула, точный расчёт
+          с подстановкой чисел, анимация и настраиваемые параметры. Никаких «выдуманных» зависимостей:
+          у каждой темы указаны источник и границы применимости.
+        </p>
+
+        <div class="intro-grid">
+          <div class="intro-item">
+            <h3>1. Выберите тему</h3>
+            <p>Слева — категории и темы. Откройте любую карточку.</p>
+          </div>
+          <div class="intro-item">
+            <h3>2. Меняйте параметры</h3>
+            <p>Ползунки и поля ввода пересчитывают результат и обновляют анимацию в реальном времени.</p>
+          </div>
+          <div class="intro-item">
+            <h3>3. Следите за границами</h3>
+            <p>Жёлтый или красный баннер означает, что модель вышла за пределы применимости —
+               расчёт ещё возможен, но в реальности будет иначе.</p>
+          </div>
+          <div class="intro-item">
+            <h3>4. Проверяйте по источникам</h3>
+            <p>Внизу каждой карточки — учебники и справочники, по которым взяты формулы и константы.</p>
+          </div>
+        </div>
+
+        <div class="note note-info">
+          <strong>Кому адресовано.</strong> Ученики 7–11 классов, студенты младших курсов,
+          учителя для демонстрации на уроке. Анимации можно замедлять ползунком скорости,
+          чтобы разобрать отдельный этап опыта.
+        </div>
+
+        <div class="note note-warn">
+          <strong>Важно о достоверности.</strong> Все формулы и константы взяты из открытых учебников и
+          справочников (Мякишев, Пёрышкин, Габриелян, Ахметов, tables растворимости), но
+          <em>номера страниц зависят от издания</em> — перед уроком сверяйте разделы со своим учебником.
+          Модельные допущения (идеальный газ, идеальный раствор, 100 % выход по Фарадею и т. п.)
+          всегда перечислены в блоке «Границы применимости».
+        </div>
+
+        <div class="intro-actions">
+          <button class="btn btn-primary" id="startPhysBtn">Открыть физику</button>
+          <button class="btn" id="startChemBtn">Открыть химию</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Карточка темы -->
+    <section class="view view-topic" id="topicView" hidden>
+      <div class="topic-head">
+        <div>
+          <div class="crumbs" id="crumbs"></div>
+          <h2 class="topic-title" id="topicTitle"></h2>
+          <p class="topic-sub" id="topicSub"></p>
+        </div>
+        <button class="btn btn-ghost" id="printBtn" title="Версия для печати / раздаточный материал">Печать</button>
+      </div>
+
+      <div class="card desc-card">
+        <p id="topicDesc"></p>
+      </div>
+
+      <details class="card theory-card">
+        <summary class="card-title">Что важно знать</summary>
+        <ul class="list" id="theory"></ul>
+      </details>
+
+      <div class="card apply-card">
+        <h3 class="card-title">Где применяется</h3>
+        <ul class="list" id="apply"></ul>
+      </div>
+
+      <div class="card formula-card">
+        <h3 class="card-title">Расчёт</h3>
+        <div id="dynStatus"></div>
+        <div class="calc-block">
+          <div class="calc-row"><span class="calc-tag">формула</span><span class="math" id="calcFormula"></span></div>
+          <div id="calcSubst"></div>
+          <div class="calc-row calc-result"><span class="calc-tag">результат</span><span class="math" id="calcResult"></span></div>
+        </div>
+        <div class="results" id="results"></div>
+        <div class="extras" id="extras"></div>
+        <div class="vars" id="vars"></div>
+      </div>
+
+      <div class="card anim-card">
+        <div class="anim-head">
+          <h3 class="card-title">Анимация</h3>
+          <div class="anim-controls">
+            <button class="btn btn-sm" id="playBtn">▶ Пуск</button>
+            <button class="btn btn-sm" id="resetBtn">⟲ Сброс</button>
+            <label class="speed">Скорость
+              <input type="range" id="speedRange" min="0.1" max="2" step="0.1" value="1">
+              <span id="speedVal">1.0×</span>
+            </label>
+          </div>
+        </div>
+        <div class="canvas-wrap"><canvas id="canvas"></canvas></div>
+        <p class="canvas-hint" id="canvasHint"></p>
+      </div>
+
+      <div class="card params-card">
+        <div class="anim-head">
+          <h3 class="card-title">Параметры</h3>
+          <button class="btn btn-sm" id="resetParamsBtn">Сбросить параметры</button>
+        </div>
+        <div class="params" id="params"></div>
+        <div class="errors" id="errors"></div>
+        <div class="try" id="tryList"></div>
+      </div>
+
+      <div class="card limits-card">
+        <h3 class="card-title">Границы применимости и допущения</h3>
+        <ul class="list" id="limits"></ul>
+      </div>
+
+      <div class="two-col">
+        <div class="card example-card">
+          <h3 class="card-title">Пример из жизни</h3>
+          <p id="example"></p>
+        </div>
+        <div class="card check-card">
+          <h3 class="card-title">Проверьте себя</h3>
+          <ol class="list" id="selfcheck"></ol>
+        </div>
+      </div>
+
+      <div class="card sources-card">
+        <h3 class="card-title">Источники (проверяемые)</h3>
+        <ol class="list sources" id="sources"></ol>
+        <p class="sources-note">Формулировки законов и значения констант сверяются по указанным изданиям;
+          нумерация страниц может отличаться в разных годах выпуска — ориентируйтесь на раздел/таблицу.</p>
+      </div>
+    </section>
+
+    <footer class="footer">
+      <p>Учебный прототип. Расчёты выполняются по формулам школьного курса; результаты округляются
+        до 2–4 значащих цифр. Не заменяет постановку реального эксперимента.</p>
+    </footer>
+  </main>
+</div>
+
+<script src="js/format.js"></script>
+<script src="js/calc.js"></script>
+<script src="js/draw-helpers.js"></script>
+<script src="js/data-physics.js"></script>
+<script src="js/data-chemistry.js"></script>
+<script src="js/draw-demos.js"></script>
+<script src="js/draw-chem-demos.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
