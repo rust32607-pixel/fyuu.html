@@ -1,2 +1,1 @@
-# fyuu.html
-jhhvhiubjho
+print "INDEX.HTML"
